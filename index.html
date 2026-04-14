@@ -168,8 +168,47 @@
                         </select>
                     </div>
                     <div class="col-6">
-                        <label class="form-label text-white small">Foil Rarity (0-0x25)</label>
-                        <input type="text" id="foilRarity" class="form-control form-control-sm bg-secondary text-white border-0" value="00" maxlength="2">
+                        <label class="form-label text-white small">Foil Rarity (0x01-0x25)</label>
+                        <select id="foilRarity" class="form-select form-select-sm bg-secondary text-white border-0">
+                            <option value="0">0x00 - None</option>
+                            <option value="1">0x01 - Basic</option>
+                            <option value="2">0x02 - Glossy</option>
+                            <option value="3">0x03 - Prismatic</option>
+                            <option value="4">0x04 - Legendary Prismatic</option>
+                            <option value="5">0x05 - Crystal</option>
+                            <option value="6">0x06 - Aurora</option>
+                            <option value="7">0x07 - Starlight</option>
+                            <option value="8">0x08 - Starlight</option>
+                            <option value="9">0x09 - Starlight</option>
+                            <option value="10">0x0A - Full Starlight</option>
+                            <option value="11">0x0B - Full Starlight</option>
+                            <option value="12">0x0C - Full Starlight</option>
+                            <option value="13">0x0D - Sepia (Ghost Rare)</option>
+                            <option value="14">0x0E - Sepia (Ghost Rare) 2</option>
+                            <option value="15">0x0F - Sepia (Ghost Rare) 3</option>
+                            <option value="16">0x10 - Noise</option>
+                            <option value="17">0x11 - Noise 2</option>
+                            <option value="18">0x12 - Noise 3</option>
+                            <option value="19">0x13 - Damaged</option>
+                            <option value="20">0x14 - Damaged 2</option>
+                            <option value="21">0x15 - Damaged 3</option>
+                            <option value="22">0x16 - Damaged 4</option>
+                            <option value="23">0x17 - Damaged 5</option>
+                            <option value="24">0x18 - Full Starlight WCS 2025</option>
+                            <option value="25">0x19 - Full Starlight KC Cup</option>
+                            <option value="26">0x1A - Full Starlight Goha Cup</option>
+                            <option value="27">0x1B - Stone</option>
+                            <option value="28">0x1C - Stone 2</option>
+                            <option value="29">0x1D - Stone 3</option>
+                            <option value="30">0x1E - Animated</option>
+                            <option value="31">0x1F - Crystal 2</option>
+                            <option value="32">0x20 - Crystal 3</option>
+                            <option value="33">0x21 - Blaze</option>
+                            <option value="34">0x22 - Tenebrous</option>
+                            <option value="35">0x23 - Luminious</option>
+                            <option value="36">0x24 - Ripple</option>
+                            <option value="37">0x25 - Gust</option>
+                        </select>
                     </div>
                 </div>
 
@@ -195,6 +234,48 @@
         const foilColors = ['#6c757d', '#ffd700', '#00ffff', '#9d4edd', '#ff006e', '#00b4d8']
         let currentFoilEditIndex = -1
         let currentFoilEditDeckType = ''
+
+        // Foil Rarity Names - Customize these names as you like
+        const foilRarityNames = {
+            0: 'None',
+            1: 'Common Foil',
+            2: 'Uncommon Foil',
+            3: 'Rare Foil',
+            4: 'Super Rare Foil',
+            5: 'Ultra Rare Foil',
+            6: 'Secret Rare Foil',
+            7: 'Ultimate Rare Foil',
+            8: 'Starlight Rare',
+            9: 'Ghost Rare',
+            10: 'Holographic Rare',
+            11: 'Premium Gold Rare',
+            12: 'Prismatic Secret Rare',
+            13: 'Quarter Century Secret Rare',
+            14: 'Platinum Secret Rare',
+            15: 'Collector\'s Rare',
+            16: 'Legend\'s Secret Rare',
+            17: 'Mosaic Rare',
+            18: 'Collector\'s Ultra Rare',
+            19: 'Collector\'s Secret Rare',
+            20: 'Japanese Exclusive Foil',
+            21: 'Premium Pack Foil',
+            22: 'Tournament Foil',
+            23: 'Limited Edition Foil',
+            24: 'Signature Foil',
+            25: 'Millennium Foil',
+            26: 'Golden Foil',
+            27: 'Crystal Foil',
+            28: 'Rainbow Foil',
+            29: 'Shimmering Foil',
+            30: 'Cosmic Foil',
+            31: 'Celestial Foil',
+            32: 'Legendary Foil',
+            33: 'Divine Foil',
+            34: 'Eternal Foil',
+            35: 'Infinity Foil',
+            36: 'Nexus Foil',
+            37: 'Ultimate Foil'
+        }
 
         let searchTimeout = null
         document.getElementById('searchInput').addEventListener('input', () => {
@@ -489,7 +570,7 @@
             document.getElementById('foilStampId').value = (card.stampId || 0).toString(16).padStart(2, '0').toUpperCase()
             document.getElementById('foilTextColor').value = card.textColor || 0
             document.getElementById('foilRimColor').value = card.rimColor || 0
-            document.getElementById('foilRarity').value = (card.foilRarity || 0).toString(16).padStart(2, '0').toUpperCase()
+            document.getElementById('foilRarity').value = card.foilRarity || 0
             
             updateFoilHexPreview()
             document.getElementById('foilModal').classList.remove('d-none')
@@ -499,7 +580,7 @@
             const stampId = parseInt(document.getElementById('foilStampId').value, 16) || 0
             const textColor = parseInt(document.getElementById('foilTextColor').value) || 0
             const rimColor = parseInt(document.getElementById('foilRimColor').value) || 0
-            const foilRarity = parseInt(document.getElementById('foilRarity').value, 16) || 0
+            const foilRarity = parseInt(document.getElementById('foilRarity').value) || 0
             
             const hexValue = generateFoilHex(stampId, textColor, rimColor, foilRarity)
             document.getElementById('foilCardHex').textContent = hexValue
@@ -515,7 +596,7 @@
             const stampId = parseInt(document.getElementById('foilStampId').value, 16) || 0
             const textColor = parseInt(document.getElementById('foilTextColor').value) || 0
             const rimColor = parseInt(document.getElementById('foilRimColor').value) || 0
-            const foilRarity = parseInt(document.getElementById('foilRarity').value, 16) || 0
+            const foilRarity = parseInt(document.getElementById('foilRarity').value) || 0
             
             card.stampId = stampId
             card.textColor = textColor
