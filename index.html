@@ -76,6 +76,8 @@
                                         </div>
                                     </div>
                                     <div class="d-flex flex-wrap gap-1">
+                                        <button onclick="openImportModal()" class="btn btn-info btn-sm" style="font-size:0.75rem; padding: 0.35rem 0.5rem;">📥 Import</button>
+                                        <button onclick="openLookupModal()" class="btn btn-secondary btn-sm" style="font-size:0.75rem; padding: 0.35rem 0.5rem;">🔍 Lookup</button>
                                         <button onclick="copyDeck('main')" class="btn btn-warning btn-sm" style="font-size:0.75rem; padding: 0.35rem 0.5rem;">📋 Copy IDs</button>
                                         <button onclick="copyFoilDeck('main')" class="btn btn-sm text-white" style="background:#9d4edd; font-size:0.75rem; padding: 0.35rem 0.5rem;">✨ Foil</button>
                                         <button onclick="clearDeck('main')" class="btn btn-outline-danger btn-sm" style="font-size:0.75rem; padding: 0.35rem 0.5rem;">Clear</button>
@@ -124,7 +126,72 @@
 
     <div id="toast" class="d-none position-fixed bottom-0 end-0 m-4 bg-success text-white px-4 py-3 rounded-3 shadow-lg"></div>
 
-    <div id="foilModal" class="d-none position-fixed top-0 start-0 w-100 h-100 bg-black bg-opacity-90 d-flex align-items-center justify-content-center p-3" style="z-index: 2000;">
+    <div id="importModal" class="d-none position-fixed top-0 start-0 w-100 h-100 bg-black bg-opacity-90 d-flex align-items-center justify-content-center p-3" style="z-index: 2000;">
+        <div class="bg-dark rounded-4 w-100" style="max-width:700px;">
+            <div class="border-bottom border-secondary p-4 d-flex align-items-center justify-content-between gap-3">
+                <h3 class="h5 mb-0 text-white">Import Cards</h3>
+                <button onclick="closeImportModal()" class="btn btn-outline-light btn-sm" style="font-size: 1.2rem; padding: 0 0.35rem;">✕</button>
+            </div>
+            <div class="p-4">
+                <div class="mb-3">
+                    <label class="form-label text-white">Paste Konami IDs</label>
+                    <textarea id="importCardIds" class="form-control form-control-sm bg-secondary text-white border-0" rows="6" placeholder="Format 1: 4844,5000,5001&#10;Format 2: 4,844;5,000;5,001&#10;Format 3: 4,844 5,000 5,001&#10;Or each ID on a new line"></textarea>
+                </div>
+                <small class="text-muted d-block mb-4">🔍 Auto-detects format: comma-separated (4844,5000), semicolon-separated (4,844;5,000), space-separated, or new lines. Automatically removes thousand separators.</small>
+                <div class="d-grid gap-2">
+                    <div class="d-flex gap-2">
+                        <button onclick="importCardsTo('main')" class="btn btn-warning flex-grow-1 fw-bold">📕 Add to Main Deck</button>
+                        <button onclick="importCardsTo('extra')" class="btn text-white flex-grow-1 fw-bold" style="background:#7c3aed;">🌟 Add to Extra Deck</button>
+                    </div>
+                    <button onclick="closeImportModal()" class="btn btn-outline-light">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="lookupModal" class="d-none position-fixed top-0 start-0 w-100 h-100 bg-black bg-opacity-90 d-flex align-items-center justify-content-center p-3" style="z-index: 2000;">
+        <div class="bg-dark rounded-4 w-100" style="max-width:700px;">
+            <div class="border-bottom border-secondary p-4 d-flex align-items-center justify-content-between gap-3">
+                <h3 class="h5 mb-0 text-white">Card Lookup by Konami ID</h3>
+                <button onclick="closeLookupModal()" class="btn btn-outline-light btn-sm" style="font-size: 1.2rem; padding: 0 0.35rem;">✕</button>
+            </div>
+            <div class="p-4">
+                <div class="mb-4">
+                    <label class="form-label text-white">Enter Konami ID</label>
+                    <div class="input-group">
+                        <input type="text" id="lookupKonamiId" class="form-control form-control-sm bg-secondary text-white border-0" placeholder="e.g., 7171 or 7,171" onkeypress="if(event.key === 'Enter') searchCardByKonami()">
+                        <button onclick="searchCardByKonami()" class="btn btn-warning btn-sm">Search</button>
+                    </div>
+                </div>
+                <div id="lookupResult" style="display:none;">
+                    <div class="card bg-secondary text-white mb-3">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <img id="lookupCardImg" src="" class="img-fluid rounded-2" alt="Card">
+                                </div>
+                                <div class="col-md-8">
+                                    <h5 id="lookupCardName" class="text-white mb-2"></h5>
+                                    <small class="text-muted d-block">Type: <span id="lookupCardType" class="text-white"></span></small>
+                                    <small class="text-muted d-block">Card ID: <span id="lookupCardId" class="text-white"></span></small>
+                                    <small class="text-muted d-block">Konami ID: <span id="lookupKonamiIdDisplay" class="text-white"></span></small>
+                                    <div id="lookupCardDesc" class="mt-3 text-muted small" style="max-height:150px; overflow-y:auto;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button onclick="addLookupCardToMain()" class="btn btn-warning fw-bold">📕 Add to Main Deck</button>
+                        <button onclick="addLookupCardToExtra()" class="btn text-white fw-bold" style="background:#7c3aed;">🌟 Add to Extra Deck</button>
+                    </div>
+                </div>
+                <div id="lookupNoResult" class="text-center py-5 text-muted" style="display:none;">
+                    <div class="display-4 mb-3">❌</div>
+                    <p class="mb-0">Card not found. Please check the Konami ID and try again.</p>
+                </div>
+            </div>
+        </div>
+    </div>
         <div class="bg-dark rounded-4 w-100" style="max-width:600px;">
             <div class="border-bottom border-secondary p-4 d-flex align-items-center justify-content-between gap-3">
                 <h3 class="h5 mb-0 text-white">Edit Foil Properties</h3>
@@ -622,6 +689,102 @@
             }
         }
 
+        function openImportModal() {
+            document.getElementById('importModal').classList.remove('d-none')
+            document.getElementById('importCardIds').value = ''
+            document.getElementById('importCardIds').focus()
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').classList.add('d-none')
+            document.getElementById('importCardIds').value = ''
+        }
+
+        // Helper function to intelligently parse card IDs from various formats
+        function parseCardIds(inputText) {
+            // Auto-detect based on separators present in input
+            // Semicolons indicate thousand-separator format: 4,844;5,000;5,001
+            // No semicolons means comma-separated IDs: 4844,5000,5001
+            
+            let ids = []
+            
+            if (inputText.includes(';')) {
+                // Format with thousand separators and semicolon separators
+                // Examples: "4,844;5,000;5,001" or "7,171;6,540;3,407"
+                const cleanedInput = inputText.replace(/,/g, '')
+                ids = cleanedInput.split(/[;\s\n]+/)
+            } else {
+                // Format without thousand separators, commas/spaces/newlines as separators
+                // Examples: "4844,5000,5001" or "4844 5000 5001"
+                ids = inputText.split(/[,\s\n]+/)
+            }
+            
+            // Clean and validate each ID
+            ids = ids
+                .map(id => id.trim().replace(/,/g, ''))  // Remove any remaining commas and trim
+                .filter(id => id && /^\d+$/.test(id))    // Keep only valid digit strings
+            
+            return ids
+        }
+
+        async function importCardsTo(deckType) {
+            const inputText = document.getElementById('importCardIds').value.trim()
+            
+            if (!inputText) {
+                showToast('Please enter Konami IDs', 'red')
+                return
+            }
+
+            // Parse IDs using intelligent format detection
+            const ids = parseCardIds(inputText)
+
+            if (ids.length === 0) {
+                showToast('No valid Konami IDs found', 'red')
+                return
+            }
+
+            showToast(`Importing ${ids.length} cards...`, 'emerald')
+            closeImportModal()
+
+            let successCount = 0
+            let failCount = 0
+
+            for (const id of ids) {
+                try {
+                    // Search by Konami ID only
+                    const res = await fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?konami_id=${id}&misc=yes`)
+                    const json = await res.json()
+                    const card = json.data?.[0]
+
+                    if (!card) {
+                        failCount++
+                        continue
+                    }
+
+                    // Add foil configuration properties
+                    card.stampId = 0
+                    card.textColor = 0
+                    card.rimColor = 0
+                    card.foilRarity = 0
+
+                    if (deckType === 'main') mainDeck.push(card)
+                    else extraDeck.push(card)
+
+                    successCount++
+                } catch (e) {
+                    console.error(e)
+                    failCount++
+                }
+            }
+
+            renderDecks()
+            if (failCount > 0) {
+                showToast(`✅ Imported ${successCount} cards (${failCount} failed)`, 'emerald')
+            } else {
+                showToast(`✅ Successfully imported ${successCount} cards!`, 'emerald')
+            }
+        }
+
         function setupFoilInputListeners() {
             ['foilStampId', 'foilTextColor', 'foilRimColor', 'foilRarity'].forEach(id => {
                 const elem = document.getElementById(id)
@@ -630,6 +793,120 @@
                     elem.addEventListener('change', updateFoilHexPreview)
                 }
             })
+        }
+
+        // Lookup Modal Functions
+        let currentLookupCard = null
+
+        function openLookupModal() {
+            document.getElementById('lookupModal').classList.remove('d-none')
+            document.getElementById('lookupKonamiId').value = ''
+            document.getElementById('lookupResult').style.display = 'none'
+            document.getElementById('lookupNoResult').style.display = 'none'
+            document.getElementById('lookupKonamiId').focus()
+        }
+
+        function closeLookupModal() {
+            document.getElementById('lookupModal').classList.add('d-none')
+            currentLookupCard = null
+        }
+
+        async function searchCardByKonami() {
+            const konamiIdInput = document.getElementById('lookupKonamiId').value.trim()
+            
+            if (!konamiIdInput) {
+                showToast('Please enter a Konami ID', 'red')
+                return
+            }
+
+            // Clean the input (remove commas from thousand separators)
+            const cleanedId = konamiIdInput.replace(/,/g, '')
+            
+            if (!/^\d+$/.test(cleanedId)) {
+                showToast('Invalid Konami ID format', 'red')
+                return
+            }
+
+            try {
+                const res = await fetch(`https://db.ygoprodeck.com/api/v7/cardinfo.php?konami_id=${cleanedId}&misc=yes`)
+                const json = await res.json()
+                const card = json.data?.[0]
+
+                if (!card) {
+                    document.getElementById('lookupResult').style.display = 'none'
+                    document.getElementById('lookupNoResult').style.display = 'block'
+                    return
+                }
+
+                // Display card details
+                currentLookupCard = card
+                const imgUrl = card.card_images?.[0]?.image_url || 'https://via.placeholder.com/300x400/222/fff?text=No+Image'
+                
+                document.getElementById('lookupCardImg').src = imgUrl
+                document.getElementById('lookupCardName').textContent = card.name
+                document.getElementById('lookupCardType').textContent = card.type || 'Unknown'
+                document.getElementById('lookupCardId').textContent = card.id
+                document.getElementById('lookupKonamiIdDisplay').textContent = card.konami_id || cleanedId
+                
+                // Display description or card text
+                let descText = ''
+                if (card.desc) {
+                    descText = card.desc
+                }
+                if (card.atk !== undefined && card.def !== undefined) {
+                    descText += `\n\nATK: ${card.atk} / DEF: ${card.def}`
+                }
+                if (card.level) {
+                    descText += `\nLevel: ${card.level}`
+                }
+                if (card.attribute) {
+                    descText += `\nAttribute: ${card.attribute}`
+                }
+                if (card.race) {
+                    descText += `\nType: ${card.race}`
+                }
+                
+                document.getElementById('lookupCardDesc').textContent = descText
+                
+                document.getElementById('lookupNoResult').style.display = 'none'
+                document.getElementById('lookupResult').style.display = 'block'
+                
+            } catch (e) {
+                console.error(e)
+                showToast('Error searching for card', 'red')
+                document.getElementById('lookupResult').style.display = 'none'
+                document.getElementById('lookupNoResult').style.display = 'block'
+            }
+        }
+
+        function addLookupCardToMain() {
+            if (!currentLookupCard) return
+            
+            const card = JSON.parse(JSON.stringify(currentLookupCard))
+            card.stampId = 0
+            card.textColor = 0
+            card.rimColor = 0
+            card.foilRarity = 0
+            
+            mainDeck.push(card)
+            renderDecks()
+            showToast(`Added to Main Deck!`, 'emerald')
+            closeLookupModal()
+        }
+
+        function addLookupCardToExtra() {
+            if (!currentLookupCard) return
+            
+            const card = JSON.parse(JSON.stringify(currentLookupCard))
+            card.stampId = 0
+            card.textColor = 0
+            card.rimColor = 0
+            card.foilRarity = 0
+            
+            extraDeck.push(card)
+            renderDecks()
+            showToast(`Added to Extra Deck!`, 'emerald')
+            closeLookupModal()
         }
 
         function copyDeck(deckType) {
