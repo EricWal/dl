@@ -377,7 +377,11 @@
             const selectedBgText = document.getElementById('selectedBgText')
 
             try {
-                const response = await fetch('get_bg_images.php')
+                // Try PHP first (for localhost with PHP support)
+                let response = await fetch('get_bg_images.php')
+                if (!response.ok) {
+                    throw new Error('PHP not available')
+                }
                 const bgImages = await response.json()
 
                 bgImages.forEach(bg => {
@@ -394,8 +398,29 @@
                 bgCount.textContent = `${bgImages.length} / ${bgImages.length}`
 
             } catch (error) {
-                console.error('Failed to load background images:', error)
-                bgCount.textContent = 'Error loading images'
+                console.log('PHP not available, trying JSON fallback:', error.message)
+                try {
+                    // Fallback to static JSON file (for GitHub Pages)
+                    const response = await fetch('bg_images.json')
+                    const bgImages = await response.json()
+
+                    bgImages.forEach(bg => {
+                        const li = document.createElement('li')
+                        li.innerHTML = `
+                            <a class="dropdown-item text-white d-flex align-items-center gap-2" href="#" onclick="selectBackground('${bg}')">
+                                <img src="bg/${bg}" alt="${bg}" style="width:30px; height:30px; object-fit:cover; border-radius:3px;">
+                                <span>${bg.replace('.png', '')}</span>
+                            </a>
+                        `
+                        bgMenu.appendChild(li)
+                    })
+
+                    bgCount.textContent = `${bgImages.length} / ${bgImages.length}`
+
+                } catch (jsonError) {
+                    console.error('Failed to load background images from both PHP and JSON:', jsonError)
+                    bgCount.textContent = 'Error loading images'
+                }
             }
         }
 
