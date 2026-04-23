@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>YGOPRO Deck Builder - Konami ID Exporter + Alt Art</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
@@ -12,10 +13,15 @@
         .header-font { font-family: 'Press Start 2P', cursive; }
         .result-card:hover { transform: translateY(-6px); }
         .deck-card:hover { transform: scale(1.03); }
-        .modal { animation: modalPop 0.3s ease; }
-        @keyframes modalPop {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+        .dropdown-menu {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+        }
+        .dropdown-item:hover {
+            background-color: #495057;
         }
     </style>
 </head>
@@ -109,10 +115,31 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="col-12">
+                        <div class="card bg-secondary border-2 shadow-sm h-100" style="border-color:#28a745 !important;">
+                            <div class="card-body p-3 d-flex flex-column gap-2">
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="fs-3">🎨</span>
+                                        <div>
+                                            <h2 class="h6 mb-0">Background</h2>
+                                            <span id="bgCount" class="badge bg-success text-white fw-bold small">0 / 244</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-dark dropdown-toggle w-100 text-start d-flex align-items-center gap-2" type="button" id="bgDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <span id="selectedBgText">Select Background</span>
+                                    </button>
+                                    <ul class="dropdown-menu bg-dark w-100" aria-labelledby="bgDropdown" id="bgMenu" style="max-height:300px; overflow-y:auto;">
+                                        <!-- Options will be populated by JavaScript -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
 
     <div id="altModal" class="d-none position-fixed top-0 start-0 w-100 h-100 bg-black bg-opacity-90 d-flex align-items-center justify-content-center p-3 overflow-auto" style="z-index: 2000;">
         <div class="bg-dark rounded-4 w-100" style="max-width:900px; max-height:90vh; overflow:auto;">
@@ -331,6 +358,49 @@
 
         let currentFoilEditIndex = -1
         let currentFoilEditDeckType = ''
+
+        // Function to handle background selection
+        function selectBackground(bg) {
+            const selectedBgText = document.getElementById('selectedBgText')
+            selectedBgText.innerHTML = `
+                <img src="bg/${bg}" alt="${bg}" style="width:20px; height:20px; object-fit:cover; border-radius:3px; margin-right:5px;">
+                ${bg.replace('.png', '')}
+            `
+            // Here you can add logic to apply the background to the deck or whatever
+            console.log('Selected background:', bg)
+        }
+
+        // Load background images
+        async function loadBackgrounds() {
+            const bgMenu = document.getElementById('bgMenu')
+            const bgCount = document.getElementById('bgCount')
+            const selectedBgText = document.getElementById('selectedBgText')
+
+            try {
+                const response = await fetch('get_bg_images.php')
+                const bgImages = await response.json()
+
+                bgImages.forEach(bg => {
+                    const li = document.createElement('li')
+                    li.innerHTML = `
+                        <a class="dropdown-item text-white d-flex align-items-center gap-2" href="#" onclick="selectBackground('${bg}')">
+                            <img src="bg/${bg}" alt="${bg}" style="width:30px; height:30px; object-fit:cover; border-radius:3px;">
+                            <span>${bg.replace('.png', '')}</span>
+                        </a>
+                    `
+                    bgMenu.appendChild(li)
+                })
+
+                bgCount.textContent = `${bgImages.length} / ${bgImages.length}`
+
+            } catch (error) {
+                console.error('Failed to load background images:', error)
+                bgCount.textContent = 'Error loading images'
+            }
+        }
+
+        // Initialize backgrounds on page load
+        document.addEventListener('DOMContentLoaded', loadBackgrounds)
 
         // Foil Rarity Names - Customize these names as you like
         const foilRarityNames = {
@@ -1007,6 +1077,5 @@
             }, 500)
         }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
