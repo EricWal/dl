@@ -58,14 +58,15 @@ if (!file_exists($list_file)) {
 }
 
 // Read the list file
-$card_ids = file($list_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+$file_content = file_get_contents($list_file);
 
-if (empty($card_ids)) {
-    die("Error: No card IDs found in $list_file\n");
+if (!$file_content) {
+    die("Error: Could not read $list_file\n");
 }
 
-// Trim whitespace from each line
-$card_ids = array_map('trim', $card_ids);
+// Split by spaces, newlines, commas, or tabs
+$card_ids = preg_split('/[\s,]+/', trim($file_content), -1, PREG_SPLIT_NO_EMPTY);
+
 // Filter out empty lines and non-numeric values
 $card_ids = array_filter($card_ids, function($id) {
     return !empty($id) && is_numeric($id);
